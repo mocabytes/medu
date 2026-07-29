@@ -39,22 +39,28 @@ class DatabaseSeeder extends Seeder
         $adminRole = Role::where('name', 'admin')->first();
         $farmaceuticoRole = Role::where('name', 'farmaceutico')->first();
 
-        User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'name' => 'Test Admin',
-                'password' => bcrypt('password'),
-                'role_id' => $adminRole->id,
-            ]
-        );
+        if (!$adminRole || !$farmaceuticoRole) {
+            $this->command->error('No se encontraron los roles. Verifica que se hayan creado correctamente.');
+            return;
+        }
 
-        User::firstOrCreate(
-            ['email' => 'farmacia@example.com'],
-            [
-                'name' => 'Test Farmacéutico',
-                'password' => bcrypt('password'),
-                'role_id' => $farmaceuticoRole->id,
-            ]
-        );
+        $this->command->info('Creando usuarios...');
+        $this->command->info("adminRole ID: {$adminRole->id}, farmaceuticoRole ID: {$farmaceuticoRole->id}");
+
+        $adminUser = User::create([
+            'name' => 'Test Admin',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'role_id' => $adminRole->id,
+        ]);
+        $this->command->info("Admin user created: ID {$adminUser->id}");
+
+        $farmaceuticoUser = User::create([
+            'name' => 'Test Farmacéutico',
+            'email' => 'farmacia@example.com',
+            'password' => 'password',
+            'role_id' => $farmaceuticoRole->id,
+        ]);
+        $this->command->info("Farmaceutico user created: ID {$farmaceuticoUser->id}");
     }
 }

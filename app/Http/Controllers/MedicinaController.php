@@ -13,7 +13,7 @@ use App\Models\Proveedor;
 
 /**
  * Controlador principal para gestionar el inventario de medicamentos.
- * 
+ *
  * Maneja el CRUD completo de medicinas, filtrado avanzado, exportación (PDF/CSV),
  * y consulta del kardex de movimientos. Solo los admins pueden crear/editar/eliminar,
  * mientras que farmacéuticos solo pueden consultar y registrar movimientos.
@@ -31,7 +31,7 @@ class MedicinaController extends Controller
 
     /**
      * Construye la consulta de medicinas con todos los filtros aplicados.
-     * 
+     *
      * Permite buscar por nombre comercial o principio activo, filtrar por categoría,
      * y filtrar por estado de stock (agotado, bajo, medio, alto). Se reutiliza en
      * index, exportPdf y exportCsv para mantener consistencia.
@@ -70,7 +70,7 @@ class MedicinaController extends Controller
 
     /**
      * Muestra el inventario principal con todos los filtros y estadísticas.
-     * 
+     *
      * Calcula resúmenes en tiempo real: total de medicinas, stock total, valor del inventario,
      * medicinas con stock bajo, y lotes próximos a vencer (30 días). Esta información
      * se muestra en el dashboard para toma de decisiones rápidas.
@@ -119,7 +119,7 @@ class MedicinaController extends Controller
 
     /**
      * Muestra el inventario con el formulario de creación abierto.
-     * 
+     *
      * Reutiliza la vista index pero con un flag para mostrar el modal de creación.
      * Esto permite agregar medicinas rápidamente sin salir de la vista principal.
      */
@@ -171,7 +171,7 @@ class MedicinaController extends Controller
 
     /**
      * Exporta el inventario actual a PDF.
-     * 
+     *
      * Usa DomPDF para generar un documento profesional con los resultados
      * de la búsqueda actual (respeta los filtros aplicados).
      */
@@ -187,7 +187,7 @@ class MedicinaController extends Controller
 
     /**
      * Exporta el inventario actual a CSV.
-     * 
+     *
      * Genera un archivo compatible con Excel con BOM UTF-8 para mostrar
      * correctamente caracteres especiales. Incluye todos los campos importantes.
      */
@@ -230,7 +230,7 @@ class MedicinaController extends Controller
 
     /**
      * Retorna el kardex de movimientos de una medicina específica.
-     * 
+     *
      * Se usa vía AJAX para mostrar el historial en un modal sin recargar la página.
      * Incluye el usuario que hizo el movimiento y el lote asociado si existe.
      */
@@ -247,7 +247,7 @@ class MedicinaController extends Controller
 
     /**
      * Guarda una nueva medicina en el inventario.
-     * 
+     *
      * Si el usuario selecciona "crear nueva categoría", la crea automáticamente.
      * La validación se delega al FormRequest para mantener el controlador limpio.
      */
@@ -276,13 +276,25 @@ class MedicinaController extends Controller
 
     /**
      * Muestra el formulario para editar una medicina existente.
-     * 
+     *
      * Carga todas las categorías y proveedores para permitir cambios.
+     * Si es una solicitud AJAX, devuelve los datos en JSON para el modal.
      * La edición está protegida por policy (solo admins).
      */
-    public function edit(Medicina $medicina)
+    public function edit(Request $request, Medicina $medicina)
     {
         $this->authorize('update', $medicina);
+
+        // Si es una petición AJAX, devolvemos los datos como JSON para el modal
+        if ($request->expectsJson() || $request->ajax()) {
+            $categorias = Categoria::orderBy('nombre')->get();
+            $proveedores = Proveedor::orderBy('nombre')->get();
+            return response()->json([
+                'medicina' => $medicina->load('categoria', 'proveedor'),
+                'categorias' => $categorias,
+                'proveedores' => $proveedores,
+            ]);
+        }
 
         $categorias = Categoria::all();
         $proveedores = Proveedor::orderBy('nombre')->get();
@@ -291,9 +303,10 @@ class MedicinaController extends Controller
 
     /**
      * Actualiza los datos de una medicina existente.
-     * 
+     *
      * También permite crear una categoría nueva si el usuario lo selecciona.
      * Mantiene la lógica de validación en el FormRequest.
+     * Si es una solicitud AJAX, devuelve JSON para el modal.
      */
     public function update(StoreMedicinaRequest $request, Medicina $medicina)
     {
@@ -315,12 +328,17 @@ class MedicinaController extends Controller
         $data['categoria_id'] = $categoriaId;
         $medicina->update($data);
 
+        // Si es AJAX, devolver JSON de éxito
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Medicina actualizada correctamente.']);
+        }
+
         return redirect()->route('medicinas.index');
     }
 
     /**
      * Elimina una medicina del inventario (soft delete).
-     * 
+     *
      * Usa soft deletes así que no se pierde el historial de movimientos.
      * Solo los admins pueden eliminar medicinas.
      */

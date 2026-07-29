@@ -48,8 +48,8 @@
                 </div>
                 @php
                     $isBajo = $resumen['stock_bajo'] > 0;
-                    $cardClass = $isBajo 
-                        ? 'border-amber-200 bg-amber-50/90 shadow-amber-100/50' 
+                    $cardClass = $isBajo
+                        ? 'border-amber-200 bg-amber-50/90 shadow-amber-100/50'
                         : 'border-white/70 bg-white/85 shadow-slate-200/50';
                     $titleClass = $isBajo ? 'text-amber-700' : 'text-slate-500';
                     $numClass = $isBajo ? 'text-amber-900' : 'text-slate-900';
@@ -62,8 +62,8 @@
                 </div>
                 @php
                     $isVencer = $resumen['vencer_pronto'] > 0;
-                    $vCardClass = $isVencer 
-                        ? 'border-rose-200 bg-rose-50/90 shadow-rose-100/50' 
+                    $vCardClass = $isVencer
+                        ? 'border-rose-200 bg-rose-50/90 shadow-rose-100/50'
                         : 'border-white/70 bg-white/85 shadow-slate-200/50';
                     $vTitleClass = $isVencer ? 'text-rose-700' : 'text-slate-500';
                     $vNumClass = $isVencer ? 'text-rose-900' : 'text-slate-900';
@@ -74,7 +74,7 @@
                     <p class="mt-3 text-3xl font-bold {{ $vNumClass }}">{{ number_format($resumen['vencer_pronto']) }}</p>
                     <p class="mt-2 text-sm {{ $vDescClass }}">Lotes que vencen en los próximos 30 días.</p>
                 </div>
-                
+
                 <!-- Tarjeta 6: Valor de Inventario -->
                 <div class="rounded-[1.75rem] min-w-0 border border-white/70 bg-white/85 p-5 shadow-xl shadow-slate-200/50 backdrop-blur animate-slide-up hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-100/30" style="animation-delay: 0.6s">
                     <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Valor en stock</p>
@@ -227,7 +227,7 @@
                 </div>
             </form>
         </section>
-                    
+
         <section class="overflow-hidden rounded-4xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50 animate-slide-up" style="animation-delay: 0.3s">
             <div class="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                 <div>
@@ -262,7 +262,7 @@
                                 <tr class="transition hover:bg-slate-50/80 hover:scale-[1.01] hover:shadow-md animate-fade-in" style="animation-delay: {{ $loop->index * 0.05 }}s">
                                     <td class="px-6 py-5">
                                         <div class="font-bold text-slate-900 text-base">
-                                            {{ $medicina->nombre_comercial }} 
+                                            {{ $medicina->nombre_comercial }}
                                             @if($medicina->concentracion) <span class="font-medium text-slate-500 text-sm">({{ $medicina->concentracion }})</span> @endif
                                         </div>
                                         <div class="mt-1 text-sm text-slate-600">
@@ -290,7 +290,7 @@
                                         <div class="inline-flex items-center gap-2">
                                             <button type="button" onclick="verKardex({{ $medicina->id }})" class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-indigo-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:scale-110 hover:rotate-12" title="Ver Historial (Kardex)">📋</button>
                                             @can('update', $medicina)
-                                                <a href="{{ route('medicinas.edit', $medicina->id) }}" class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-sky-700 transition hover:border-sky-200 hover:bg-sky-50 hover:scale-110 hover:-rotate-12" title="Editar">✎</a>
+                                                <button type="button" onclick="editarMedicina({{ $medicina->id }})" class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-sky-700 transition hover:border-sky-200 hover:bg-sky-50 hover:scale-110 hover:-rotate-12" title="Editar">✎</button>
                                             @endcan
                                             @can('delete', $medicina)
                                                 <form action="{{ route('medicinas.destroy', $medicina->id) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas borrar esta medicina?')">
@@ -321,7 +321,7 @@
                         </tbody>
                     </table>
                 </div>
-                
+
                 @if($medicinas->hasPages())
                     <div class="border-t border-slate-200 p-5">
                         {{ $medicinas->links() }}
@@ -375,7 +375,7 @@
                             <span class="mb-2 block text-sm font-semibold text-slate-700">Concentración</span>
                             <input type="text" name="concentracion" value="{{ old('concentracion') }}" placeholder="Ej. 500mg" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 focus:scale-[1.02]">
                         </label>
-                        
+
                         <label class="block">
                             <span class="mb-2 block text-sm font-semibold text-slate-700">Laboratorio</span>
                             <input type="text" name="laboratorio" value="{{ old('laboratorio') }}" placeholder="Ej. Bayer" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 focus:scale-[1.02]">
@@ -532,6 +532,120 @@
         </div>
     </div>
 
+    <!-- Modal Editar Medicina -->
+    <div id="modal-editar-medicina" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 px-4 py-8 backdrop-blur-sm">
+        <div class="relative w-full max-w-2xl rounded-4xl border border-white/20 bg-white shadow-2xl shadow-slate-950/30">
+            <button type="button" id="cerrar-editar-formulario" class="absolute right-4 top-4 rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 hover:scale-110">Cerrar</button>
+            <div class="p-6 sm:p-8">
+                <div class="mb-6">
+                    <p class="text-xs font-semibold uppercase tracking-[0.25em] text-sky-700">Editar registro</p>
+                    <h2 class="mt-2 text-2xl font-bold text-slate-900">Editar medicina</h2>
+                    <p class="mt-2 text-sm text-slate-500">Modifica los datos del producto y guarda los cambios.</p>
+                </div>
+
+                <div id="editar-errores" class="mb-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 hidden"></div>
+
+                <form id="form-editar-medicina" method="POST" class="space-y-6">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                        <label class="block">
+                            <span class="mb-2 block text-sm font-semibold text-slate-700">Nombre comercial</span>
+                            <input type="text" name="nombre_comercial" id="edit-nombre_comercial" required class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                        </label>
+
+                        <label class="block">
+                            <span class="mb-2 block text-sm font-semibold text-slate-700">Principio activo</span>
+                            <input type="text" name="principio_activo" id="edit-principio_activo" required class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                        </label>
+
+                        <label class="block">
+                            <span class="mb-2 block text-sm font-semibold text-slate-700">Presentación</span>
+                            <input type="text" name="presentacion" id="edit-presentacion" placeholder="Ej. Caja con 20 tabletas" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                        </label>
+
+                        <label class="block">
+                            <span class="mb-2 block text-sm font-semibold text-slate-700">Concentración</span>
+                            <input type="text" name="concentracion" id="edit-concentracion" placeholder="Ej. 500mg" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                        </label>
+
+                        <label class="block">
+                            <span class="mb-2 block text-sm font-semibold text-slate-700">Laboratorio</span>
+                            <input type="text" name="laboratorio" id="edit-laboratorio" placeholder="Ej. Bayer" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                        </label>
+
+                        <label class="block">
+                            <span class="mb-2 block text-sm font-semibold text-slate-700">Código de Barras</span>
+                            <input type="text" name="codigo_barras" id="edit-codigo_barras" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                        </label>
+
+                        <label class="block">
+                            <span class="mb-2 block text-sm font-semibold text-slate-700">Ubicación física</span>
+                            <input type="text" name="ubicacion" id="edit-ubicacion" placeholder="Ej. Estante A" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                        </label>
+
+                        <label class="block">
+                            <span class="mb-2 block text-sm font-semibold text-slate-700">Categoría</span>
+                            <select name="categoria_id" id="edit-categoria_id" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                                <option value="">Selecciona una categoría...</option>
+                                @foreach($categorias as $categoria)
+                                    <option value="{{ $categoria->id }}">{{ $categoria->nombre }}</option>
+                                @endforeach
+                                <option value="nueva">+ Crear nueva categoría</option>
+                            </select>
+                        </label>
+
+                        <label class="block">
+                            <span class="mb-2 block text-sm font-semibold text-slate-700">Proveedor</span>
+                            <select name="proveedor_id" id="edit-proveedor_id" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                                <option value="">Selecciona un proveedor</option>
+                                @foreach($proveedores ?? [] as $proveedor)
+                                    <option value="{{ $proveedor->id }}">{{ $proveedor->nombre }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+
+                        <label class="block" id="edit-nueva_categoria_container" style="display: none;">
+                            <span class="mb-2 block text-sm font-semibold text-slate-700">Nueva categoría</span>
+                            <input type="text" name="nueva_categoria" id="edit-nueva_categoria" placeholder="Nombre de la nueva categoría" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                        </label>
+
+                        <label class="block">
+                            <span class="mb-2 block text-sm font-semibold text-slate-700">Precio de compra ($)</span>
+                            <input type="number" step="0.01" min="0" name="precio_compra" id="edit-precio_compra" required class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                        </label>
+
+                        <label class="block">
+                            <span class="mb-2 block text-sm font-semibold text-slate-700">Precio de venta ($)</span>
+                            <input type="number" step="0.01" min="0" name="precio_venta" id="edit-precio_venta" required class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                        </label>
+
+                        <label class="block">
+                            <span class="mb-2 block text-sm font-semibold text-slate-700">Stock actual</span>
+                            <input type="number" min="0" name="stock_actual" id="edit-stock_actual" required class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                        </label>
+
+                        <label class="block">
+                            <span class="mb-2 block text-sm font-semibold text-slate-700">Stock Mínimo (Alerta)</span>
+                            <input type="number" min="0" name="stock_minimo" id="edit-stock_minimo" required class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                        </label>
+
+                        <label class="block md:col-span-2 items-center gap-3">
+                            <input type="checkbox" name="requiere_receta" id="edit-requiere_receta" value="1" class="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500">
+                            <span class="text-sm font-semibold text-slate-700">Requiere receta médica para su venta</span>
+                        </label>
+                    </div>
+
+                    <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                        <button type="button" id="cancelar-editar-formulario" class="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:scale-105">Cancelar</button>
+                        <button type="submit" class="rounded-full bg-sky-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-sky-600/20 transition hover:bg-sky-700 hover:scale-105 hover:shadow-xl hover:shadow-sky-600/30">Actualizar medicina</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Kardex -->
     <div id="modal-kardex" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 px-4 py-8 backdrop-blur-sm">
     <div class="relative w-full max-w-4xl rounded-4xl border border-white/20 bg-white shadow-2xl shadow-slate-950/30">
@@ -655,14 +769,14 @@
         // AJAX Search
         const filterForm = document.getElementById('filter-form');
         let debounceTimer;
-        
+
         function submitAjaxForm() {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 const url = new URL(window.location.href);
                 const formData = new FormData(filterForm);
                 formData.forEach((value, key) => url.searchParams.set(key, value));
-                
+
                 fetch(url.toString(), {
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 })
@@ -696,7 +810,7 @@
             const tbody = document.getElementById('kardex-tbody');
             tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-slate-500">Cargando movimientos...</td></tr>';
             openModal(modalK);
-            
+
             fetch(`/medicinas/${id}/movimientos`, {
                 headers: { 'Accept': 'application/json' }
             })
@@ -734,6 +848,151 @@
             if (!button && menu && !menu.classList.contains('hidden')) {
                 menu.classList.add('hidden');
             }
+        });
+
+        // Modal Editar Medicina
+        const modalEditar = document.getElementById('modal-editar-medicina');
+        const formEditar = document.getElementById('form-editar-medicina');
+        const editarErrores = document.getElementById('editar-errores');
+        const closeEditarButtons = [document.getElementById('cerrar-editar-formulario'), document.getElementById('cancelar-editar-formulario')];
+
+        // Toggle nueva categoría en modal de edición
+        const editCategoriaSelect = document.getElementById('edit-categoria_id');
+        const editNuevaCategoriaContainer = document.getElementById('edit-nueva_categoria_container');
+        const editNuevaCategoriaInput = document.getElementById('edit-nueva_categoria');
+
+        function toggleEditNuevaCategoria() {
+            const isNueva = editCategoriaSelect?.value === 'nueva';
+            editNuevaCategoriaContainer.style.display = isNueva ? 'block' : 'none';
+            if (isNueva) {
+                editNuevaCategoriaInput.setAttribute('required', 'required');
+                editNuevaCategoriaInput.focus();
+            } else {
+                editNuevaCategoriaInput.removeAttribute('required');
+                editNuevaCategoriaInput.value = '';
+            }
+        }
+
+        editCategoriaSelect?.addEventListener('change', toggleEditNuevaCategoria);
+
+        function editarMedicina(id) {
+            // Limpiar errores previos
+            editarErrores.classList.add('hidden');
+            editarErrores.innerHTML = '';
+
+            // Mostrar loading en el botón
+            const submitBtn = formEditar.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Cargando...';
+            submitBtn.disabled = true;
+
+            // Obtener datos de la medicina vía AJAX
+            fetch(`/medicinas/${id}/edit`, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Error al cargar datos');
+                return res.json();
+            })
+            .then(data => {
+                const m = data.medicina;
+
+                // Llenar el formulario con los datos
+                document.getElementById('edit-nombre_comercial').value = m.nombre_comercial || '';
+                document.getElementById('edit-principio_activo').value = m.principio_activo || '';
+                document.getElementById('edit-presentacion').value = m.presentacion || '';
+                document.getElementById('edit-concentracion').value = m.concentracion || '';
+                document.getElementById('edit-laboratorio').value = m.laboratorio || '';
+                document.getElementById('edit-codigo_barras').value = m.codigo_barras || '';
+                document.getElementById('edit-ubicacion').value = m.ubicacion || '';
+                document.getElementById('edit-categoria_id').value = m.categoria_id || '';
+                document.getElementById('edit-proveedor_id').value = m.proveedor_id || '';
+                document.getElementById('edit-precio_compra').value = m.precio_compra || '';
+                document.getElementById('edit-precio_venta').value = m.precio_venta || '';
+                document.getElementById('edit-stock_actual').value = m.stock_actual || 0;
+                document.getElementById('edit-stock_minimo').value = m.stock_minimo || 10;
+                document.getElementById('edit-requiere_receta').checked = m.requiere_receta === 1 || m.requiere_receta === true;
+
+                // Actualizar action del formulario con PUT
+                formEditar.action = `/medicinas/${id}`;
+                formEditar.querySelector('input[name="_method"]').value = 'PUT';
+
+                // Ocultar nueva categoría si estaba visible
+                toggleEditNuevaCategoria();
+
+                // Abrir modal
+                openModal(modalEditar);
+            })
+            .catch(err => {
+                editarErrores.textContent = 'Error al cargar los datos de la medicina. Intenta de nuevo.';
+                editarErrores.classList.remove('hidden');
+            })
+            .finally(() => {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            });
+        }
+
+        // Cerrar modal de edición
+        closeEditarButtons.forEach((button) => button?.addEventListener('click', () => closeModal(modalEditar)));
+
+        // Cerrar al hacer click fuera del modal
+        modalEditar?.addEventListener('click', (event) => {
+            if (event.target === modalEditar) {
+                closeModal(modalEditar);
+            }
+        });
+
+        // Enviar formulario de edición vía AJAX
+        formEditar?.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Guardando...';
+            submitBtn.disabled = true;
+
+            editarErrores.classList.add('hidden');
+            editarErrores.innerHTML = '';
+
+            const formData = new FormData(this);
+
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            })
+            .then(res => {
+                if (res.redirected) {
+                    // Redirección exitosa - recargar la página
+                    window.location.href = res.url;
+                    return;
+                }
+                if (!res.ok) {
+                    return res.json().then(err => { throw err; });
+                }
+                return res.json();
+            })
+            .then(data => {
+                // Si hay éxito, recargar la página
+                window.location.reload();
+            })
+            .catch(err => {
+                if (err.errors) {
+                    // Errores de validación
+                    const errorList = Object.values(err.errors).flat().join('<br>');
+                    editarErrores.innerHTML = errorList;
+                } else if (err.message) {
+                    editarErrores.textContent = err.message;
+                } else {
+                    editarErrores.textContent = 'Error al guardar los cambios. Intenta de nuevo.';
+                }
+                editarErrores.classList.remove('hidden');
+            })
+            .finally(() => {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            });
         });
     </script>
 @endpush

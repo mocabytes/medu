@@ -16,36 +16,37 @@ class MovimientoSeeder extends Seeder
     {
         // Obtener medicinas existentes
         $medicinas = Medicina::all();
-        
+
         if ($medicinas->isEmpty()) {
             $this->command->warn('No hay medicinas para crear movimientos. Ejecuta MedicinaSeeder primero.');
             return;
         }
 
         $movimientos = [];
-        $motivos_entrada = ['Compra a proveedor', 'Reposición de stock', 'Devolución de paciente', 'Ajuste de inventario'];
-        $motivos_salida = ['Venta a paciente', 'Pérdida', 'Caducado', 'Ajuste de inventario', 'Traspaso a otra unidad'];
+        $tipos = ['entrada', 'salida'];
+        $motivos_entrada = ['compra', 'devolucion'];
+        $motivos_salida = ['venta', 'merma'];
 
         // Crear movimientos para cada medicina
         foreach ($medicinas as $medicina) {
             // Crear entre 2-5 movimientos por medicina
             $num_movimientos = rand(2, 5);
-            
+
             for ($i = 0; $i < $num_movimientos; $i++) {
-                $tipo = rand(0, 1) === 0 ? 'Entrada' : 'Salida';
-                $motivo = $tipo === 'Entrada' 
+                $tipo = $tipos[array_rand($tipos)];
+                $motivo = $tipo === 'entrada'
                     ? $motivos_entrada[array_rand($motivos_entrada)]
                     : $motivos_salida[array_rand($motivos_salida)];
-                
+
                 // Fecha aleatoria en los últimos 90 días
                 $fecha = Carbon::now()->subDays(rand(0, 90));
-                
+
                 // Cantidad aleatoria entre 5 y 100
                 $cantidad = rand(5, 100);
 
                 $movimientos[] = [
                     'medicina_id' => $medicina->id,
-                    'tipo_movimiento' => $tipo,
+                    'tipo' => $tipo,
                     'cantidad' => $cantidad,
                     'fecha_movement' => $fecha->format('Y-m-d'),
                     'motivo' => $motivo,
@@ -57,7 +58,7 @@ class MovimientoSeeder extends Seeder
 
         // Insertar todos los movimientos
         Movimiento::insert($movimientos);
-        
+
         $this->command->info('Se crearon ' . count($movimientos) . ' movimientos.');
     }
 }
